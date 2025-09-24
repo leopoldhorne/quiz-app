@@ -90,8 +90,8 @@ function startQuiz () {
 
 function showQuestion () {
     // reset state
-    answeredDisabled = false
-    const currentQuestion = quizQuestions(currentQuestionIndex)
+    answerDisabled = false
+    const currentQuestion = quizQuestions[currentQuestionIndex]
     currentQuestionSpan.textContent = currentQuestionIndex + 1
 
     const progressPercent = (currentQuestionIndex/quizQuestions.length) * 100
@@ -108,10 +108,72 @@ function showQuestion () {
 
         // dataset is a property of the button element that allows you to store custom data
         button.dataset.correct = answer.correct
+
+        button.addEventListener("click", selectAnswer)
+        answersContainer.appendChild(button)
     })
 }
 
+function selectAnswer(event) {
+  if (answerDisabled) return
+  
+  answerDisabled = true
 
+  const selectedButton = event.target
+
+  const isCorrect = selectedButton.dataset.correct === "true"
+
+  Array.from(answersContainer.children).forEach(button => {
+    if(button.dataset.correct === "true") {
+      button.classList.add("correct")
+    }
+    else {
+      button.classList.add("incorrect")
+    }
+  })
+
+  if(isCorrect) {
+    score = score + 1
+    scoreSpan.textContent = score
+  }
+
+  setTimeout(() => {
+    currentQuestionIndex++
+    // checking if there is more questions or if quiz is over
+    if(currentQuestionIndex < quizQuestions.length) {
+      showQuestion()
+    }
+    else {
+      showResults()
+    }
+  },1000)
+}
+
+function showResults () {
+  quizScreen.classList.remove("active")
+  resultScreen.classList.add("active")
+
+  finalScoreSpan.textContent = score;
+
+  const percentage = (score/quizQuestions.length) * 100
+
+  if (percentage === 100) {
+    resultMessage.textContent = "Perfect! You are a genius!"
+  }
+  else if (percentage >= 80) {
+    resultMessage.textContent = "Good job! you know your stuff!"
+  }
+  else if (percentage >= 60) {
+    resultMessage.textContent = "Good effort, keep learning"
+  }
+  else if (percentage >= 40) {
+    resultMessage.textContent = "Keep trying"
+  }
+  else {
+    resultMessage.textContent = "Dog shit. get your shit together"
+  }
+}
 function restartQuiz () {
-    console.log("quiz restarted")
+    resultScreen.classList.remove("active")
+    startQuiz()
 }
